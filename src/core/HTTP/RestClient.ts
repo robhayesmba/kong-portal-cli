@@ -1,4 +1,5 @@
 import * as got from 'got';
+import * as fs from 'fs';
 
 import { IWorkspaceConfig } from '../WorkspaceConfig';
 import { OutgoingHttpHeaders, IRestResponse, IRestResource } from './RestInterfaces';
@@ -16,6 +17,7 @@ export default class RestClient {
   public client: got.GotInstance<got.GotJSONFn>;
   public clientHeaders: OutgoingHttpHeaders;
   public clientUrl: string;
+  public sslCert: string[] = [];
 
   public constructor(workspaceConfig: IWorkspaceConfig, workspaceName: string) {
     this.clientHeaders = workspaceConfig.headers || {};
@@ -33,6 +35,15 @@ export default class RestClient {
       this.clientHeaders['Kong-Admin-Token'] = workspaceConfig.kongAdminToken;
     }
 
+    let caFiles = [
+      "Cargill_Internal_root_CA_2.cer",
+      "Cargill_internal_M1_Issuing_CA_2.cer"
+    ]
+
+    for (let file in caFiles) {
+      this.sslCert.push( fs.readFileSync(`/Users/robhayes/certs/${caFiles[file]}`).toString() )
+    }
+
     this.client = got.extend({
       baseUrl: this.clientUrl,
       headers: this.clientHeaders,
@@ -40,13 +51,13 @@ export default class RestClient {
     });
   }
 
-  public async get<T>(resource: string, options: Partial<got.GotJSONOptions> = {}): Promise<IRestResponse<T>> {
+  public async get<T>(resource: string, options: Partial<got.GotJSONOptions> = {cert: this.sslCert}): Promise<IRestResponse<T>> {
     return this.handleResponse(await this.client.get(resource, options));
   }
 
   public async create<Output>(
     resource: IRestResource,
-    options: Partial<got.GotJSONOptions> = {},
+    options: Partial<got.GotJSONOptions> = {cert: this.sslCert},
   ): Promise<IRestResponse<Output>> {
     options.body = resource.toObject();
     return this.handleResponse(await this.client.post(resource.getResourcePath(), options));
@@ -54,7 +65,7 @@ export default class RestClient {
 
   public async update<Output>(
     resource: IRestResource,
-    options: Partial<got.GotJSONOptions> = {},
+    options: Partial<got.GotJSONOptions> = {cert: this.sslCert},
   ): Promise<IRestResponse<Output>> {
     options.body = resource.toObject();
     return this.handleResponse(await this.client.patch(resource.getResourcePath(), options));
@@ -62,7 +73,7 @@ export default class RestClient {
 
   public async save<Output>(
     resource: IRestResource,
-    options: Partial<got.GotJSONOptions> = {},
+    options: Partial<got.GotJSONOptions> = {cert: this.sslCert},
   ): Promise<IRestResponse<Output>> {
     options.body = resource.toObject();
     try {
@@ -76,7 +87,7 @@ export default class RestClient {
 
   public async delete<T>(
     resource: IRestResource,
-    options: Partial<got.GotJSONOptions> = {},
+    options: Partial<got.GotJSONOptions> = {cert: this.sslCert},
   ): Promise<IRestResponse<T>> {
     return this.handleResponse(await this.client.delete(resource.getResourcePath(), options));
   }

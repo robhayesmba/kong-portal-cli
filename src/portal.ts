@@ -9,6 +9,7 @@ import DisableCommand from './commands/disable';
 import EnableCommand from './commands/enable';
 import ServeCommand from './commands/serve';
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED="0";
 
 clipanion
   .command(`deploy <workspace> [-W,--watch] [-P,--preserve]`)

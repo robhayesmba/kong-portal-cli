@@ -35,13 +35,15 @@ export default class RestClient {
       this.clientHeaders['Kong-Admin-Token'] = workspaceConfig.kongAdminToken;
     }
 
+    let caChainPath = workspaceConfig.pathToCertChain
+
     let caFiles = [
       "Cargill_Internal_root_CA_2.cer",
       "Cargill_internal_M1_Issuing_CA_2.cer"
     ]
 
     for (let file in caFiles) {
-      this.sslCert.push( fs.readFileSync(`/Users/robhayes/certs/${caFiles[file]}`).toString() )
+      this.sslCert.push( fs.readFileSync(`${caChainPath}${caFiles[file]}`).toString() )
     }
 
     this.client = got.extend({

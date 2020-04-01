@@ -8,6 +8,7 @@ export interface IWorkspaceConfig {
   headers?: OutgoingHttpHeaders;
   kongAdminUrl?: string;
   kongAdminToken?: string;
+  pathToCertChain?: string;
 }
 
 export default class WorkspaceConfig extends Config implements IWorkspaceConfig {
@@ -65,5 +66,15 @@ export default class WorkspaceConfig extends Config implements IWorkspaceConfig 
   public set kongAdminToken(token: string) {
     // eslint-disable-next-line @typescript-eslint/camelcase
     this.data.kong_admin_token = token;
+  }
+
+  public get pathToCertChain(): string {
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    return this.data.cert_chain_path;
+  }
+
+  public set pathToCertChain(path: string) {
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    this.data.cert_chain_path = path;
   }
 }
